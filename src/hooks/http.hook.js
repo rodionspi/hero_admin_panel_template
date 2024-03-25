@@ -1,7 +1,10 @@
 import { useCallback } from "react";
+import { useSelector } from "react-redux";
 
 export const useHttp = () => {
     // const [process, setProcess] = useState('waiting');
+    const {filters} = useSelector(state => state);
+
 
     const request = useCallback(async (url, method = 'GET', body = null, headers = {'Content-Type': 'application/json'}) => {
 
@@ -15,7 +18,7 @@ export const useHttp = () => {
             }
 
             const data = await response.json();
-            
+             
             return data;
         } catch(e) {
             // setProcess('error');

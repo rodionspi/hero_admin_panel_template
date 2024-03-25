@@ -1,10 +1,15 @@
 import {useHttp} from '../../hooks/http.hook';
 import {useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {
+    CSSTransition,
+    TransitionGroup,
+  } from 'react-transition-group';
 
 import { heroesFetching, heroesFetched, heroesFetchingError, updateHeroesArr } from '../../actions';
 import HeroesListItem from "../heroesListItem/HeroesListItem";
 import Spinner from '../spinner/Spinner';
+import './heroesList.scss';
 
 const HeroesList = () => {
     const {heroes, filters, heroesLoadingStatus} = useSelector(state => state);
@@ -41,14 +46,24 @@ const HeroesList = () => {
 
         };
         return arr.map(({id, ...props}) => {
-            return <HeroesListItem key={id} {...props} deleteHero={(name) => deleteHero(name)}/>
+            return (
+                //узнать зачем нужен реф и сделать transitinGroup
+                <CSSTransition
+                    key={id}
+                    timeout={500}
+                    classNames="item">
+                    <HeroesListItem key={id} {...props} deleteHero={(name) => deleteHero(name)}/>
+                </CSSTransition>
+            )
         })
     }
 
     const elements = renderHeroesList(heroes);
     return (
         <ul>
-            {elements}
+            <TransitionGroup className="todo-list">
+                {elements}
+            </TransitionGroup>
         </ul>
     )
 }

@@ -2,9 +2,6 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHttp } from "../../hooks/http.hook";
 import { filterHeroes } from "../../actions";
-// Задача для этого компонента:
-// Активный фильтр имеет класс active
-// Представьте, что вы попросили бэкенд-разработчика об этом
 
 const HeroesFilters = () => {
     const dispatch = useDispatch();
@@ -20,8 +17,16 @@ const HeroesFilters = () => {
             .catch(e => console.log(e))
     }, []);
 
-    const applyFilter = filterType => {
-        dispatch(filterHeroes(filterType))
+    const applyFilter = (filterType, e) => {
+        dispatch(filterHeroes(filterType));
+        // Hier löschen wir die Attributklasse „aktiv“
+        e.target.parentNode.childNodes.forEach(child => {
+            if (child.classList.contains('active')) {
+                child.classList.remove('active');
+            }
+        });
+        //Hier fügen wir diese Attributklasse zu den angeklickten Elementen hinzu.
+        e.target.className += ' active';
     }
 
     //сделать так чтобы при нажатии на кнопку изменялся фильтр
@@ -32,7 +37,7 @@ const HeroesFilters = () => {
                 <div className="btn-group">
                     {typesOfFilters.map((filter) => {
                         return (
-                            <button key={filter['id']} onClick={() => applyFilter(filter.type)} className={filter['class']}>{filter['title']}</button>
+                            <button key={filter['id']} onClick={(e) => applyFilter(filter.type, e)} className={filter['class']}>{filter['title']}</button>
                         )
                     }) }
                 </div>
