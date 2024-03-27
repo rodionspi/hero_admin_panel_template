@@ -1,45 +1,68 @@
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useHttp } from "../../hooks/http.hook";
-import { filterHeroes } from "../../actions";
+import {useHttp} from '../../hooks/http.hook';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import classNames from 'classnames';
+
+import { filtersFetching, filtersFetched, filtersFetchingError, activeFilterChanged } from '../../actions';
+import Spinner from '../spinner/Spinner';
+
+// Задача для этого компонента:
+// Фильтры должны формироваться на основании загруженных данных
+// Фильтры должны отображать только нужных героев при выборе
+// Активный фильтр имеет класс active
 
 const HeroesFilters = () => {
-    const dispatch = useDispatch();
-    const {filters} = useSelector(state => state);
-    const {request} = useHttp()
-    const [typesOfFilters, setFilters] = useState([])
 
+    const {filters, filtersLoadingStatus, activeFilter} = useSelector(state => state);
+    const dispatch = useDispatch();
+    const {request} = useHttp();
+
+    // Запрос на сервер для получения фильтров и последовательной смены состояния
     useEffect(() => {
-        // Получение данных из JSON-файла при загрузке компонента
-        dispatch(filterHeroes('all'))
-        request('http://localhost:3001/filters')
-            .then(data => setFilters(data))
-            .catch(e => console.log(e))
+        dispatch(filtersFetching());
+        request("http://localhost:3001/filters")
+            .then(data => dispatch(filtersFetched(data)))
+            .catch(() => dispatch(filtersFetchingError()))
+
+        // eslint-disable-next-line
     }, []);
 
-    const applyFilter = (filterType, e) => {
-        dispatch(filterHeroes(filterType));
-        // Hier löschen wir die Attributklasse „aktiv“
-        e.target.parentNode.childNodes.forEach(child => {
-            if (child.classList.contains('active')) {
-                child.classList.remove('active');
-            }
-        });
-        //Hier fügen wir diese Attributklasse zu den angeklickten Elementen hinzu.
-        e.target.className += ' active';
+    if (filtersLoadingStatus === "loading") {
+        return <Spinner/>;
+    } else if (filtersLoadingStatus === "error") {
+        return <h5 className="text-center mt-5">Ошибка загрузки</h5>
     }
 
-    //сделать так чтобы при нажатии на кнопку изменялся фильтр
+    const renderFilters = (arr) => {
+        if (arr.length === 0) {
+            return <h5 className="text-center mt-5">Фильтры не найдены</h5>
+        }
+
+        // Данные в json-файле я расширил классами и текстом
+        return arr.map(({name, className, label}) => {
+
+            // Используем библиотеку classnames и формируем классы динамически
+            const btnClass = classNames('btn', className, {
+                'active': name === activeFilter
+            });
+            
+            return <button 
+                        key={name} 
+                        id={name} 
+                        className={btnClass}
+                        onClick={() => dispatch(activeFilterChanged(name))}
+                        >{label}</button>
+        })
+    }
+
+    const elements = renderFilters(filters);
+
     return (
         <div className="card shadow-lg mt-4">
             <div className="card-body">
                 <p className="card-text">Отфильтруйте героев по элементам</p>
                 <div className="btn-group">
-                    {typesOfFilters.map((filter) => {
-                        return (
-                            <button key={filter['id']} onClick={(e) => applyFilter(filter.type, e)} className={filter['class']}>{filter['title']}</button>
-                        )
-                    }) }
+                    {elements}
                 </div>
             </div>
         </div>
