@@ -30,7 +30,6 @@ const HeroesList = () => {
     }, [heroes, activeFilter]);
 
     const onDelete = useCallback((id) => {
-        // Удаление персонажа по его id
         deleteHero(id)
         // eslint-disable-next-line  
     }, []);
@@ -65,6 +64,7 @@ const HeroesList = () => {
     }
 
     const elements = renderHeroesList(filteredHeroes);
+    
     return (
         <TransitionGroup component="ul">
             {elements}
